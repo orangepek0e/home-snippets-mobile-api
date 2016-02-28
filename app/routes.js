@@ -25,8 +25,8 @@ module.exports = function(app, passport){
       else {
         //success!  create a token and return the successful status and the if of the logged in user
 
-        // create a token (random 32 character string)
-        var token = Math.round((Math.pow(36, 32 + 1) - Math.random() * Math.pow(36, 32))).toString(36).slice(1);
+        // create a token (random 64 character string)
+        var token = Math.round((Math.pow(36, 64 + 1) - Math.random() * Math.pow(36, 64))).toString(36).slice(1);
         // add the token to the database
         Token.create({
 
@@ -59,8 +59,8 @@ module.exports = function(app, passport){
       else{
         //success!  create a token and return the successful status and the if of the logged in user
 
-        // create a token (random 32 character string)
-        var token = Math.round((Math.pow(36, 32 + 1) - Math.random() * Math.pow(36, 32))).toString(36).slice(1);
+        // create a token (random 64 character string)
+        var token = Math.round((Math.pow(36, 64 + 1) - Math.random() * Math.pow(36, 64))).toString(36).slice(1);
 
         // add the token to the database
         Token.create({
@@ -106,33 +106,46 @@ module.exports = function(app, passport){
     });
   });
 
+
+
 };
 
+// route middleware to make sure a user is logged in
+function isLoggedIn(req, res, next) {
+
+  // if user is authenticated in the session, carry on
+  if (req.isAuthenticated())
+    return next();
+
+  // if they aren't redirect them to the home page
+  res.redirect('/login');
+}
+
 // route middleware for API
-//function isApiLoggedIn(req, res, next) {
-//
-//  // if user is authenticated in the session, carry on
-//  if (req.isAuthenticated()) {
-//    return next();
-//  }
-//  else if (req.body.user_id && req.body.token) {
-//    Token.find({
-//      user_id: req.body.user_id,
-//      token: req.body.token
-//    }, function(err, tokenRes) {
-//      if (err)
-//        res.send({ status: 'error', message: "why aren't you logged in?"});
-//
-//      // not found
-//      if (!tokenRes) {
-//        res.send({ status: 'error', message: "why aren't you logged in?"});
-//      }
-//
-//      // all checks pass, we're good!
-//      return next();
-//    });
-//  }
-//  else {
-//    res.send({ status: 'error', message: "why aren't you logged in?"});
-//  }
-//}
+function isApiLoggedIn(req, res, next) {
+
+  // if user is authenticated in the session, carry on
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  else if (req.body.user_id && req.body.token) {
+    Token.find({
+      user_id: req.body.user_id,
+      token: req.body.token
+    }, function(err, tokenRes) {
+      if (err)
+        res.send({ status: 'error', message: "why aren't you logged in?"});
+
+      // not found
+      if (!tokenRes) {
+        res.send({ status: 'error', message: "why aren't you logged in?"});
+      }
+
+      // all checks pass, we're good!
+      return next();
+    });
+  }
+  else {
+    res.send({ status: 'error', message: "why aren't you logged in?"});
+  }
+}
