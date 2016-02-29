@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var postSchema = mongoose.Schema({
     _posterId: {type: String, ref: 'User'},
+    posterName: {type: String, ref:'User'},
     title: String,
     gameName: String,
     systemName: String,

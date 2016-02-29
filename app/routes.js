@@ -4,6 +4,7 @@ var express = require('express');
 //Models
 var Token = require('../models/token.js');
 var User = require('../models/users.js');
+var Post = require('../models/post.js');
 
 module.exports = function(app, passport){
 
@@ -106,46 +107,78 @@ module.exports = function(app, passport){
     });
   });
 
+app.post('/api/post', function(req,res){
 
+  var newPost = new Post();
+  newPost._posterId = req.session.user_id;
+  newPost.title = req.param('title');
+  newPost.gameName = req.param('gameName');
+  newPost.systemName = req.param('systemName');
+  newPost.description = req.param('description');
+  newPost.location = req.param('location');
+  console.log(newPost);
+  newPost.save(function(err){
+    if(err){
+      throw err;
+    }
+
+    var returnJson = {};
+    returnJson.status = "success";
+    return res.json(returnJson);
+    });
+
+  });
+
+app.get('/api/post', function(req,res){
+  Post.find({}).sort('-date').exec(function(err, posts){
+    if(err){
+      console.log(err);
+    }
+    else{
+      return res.json(posts);
+    }
+  })
+
+});
 
 };
 
-// route middleware to make sure a user is logged in
-function isLoggedIn(req, res, next) {
-
-  // if user is authenticated in the session, carry on
-  if (req.isAuthenticated())
-    return next();
-
-  // if they aren't redirect them to the home page
-  res.redirect('/login');
-}
-
-// route middleware for API
-function isApiLoggedIn(req, res, next) {
-
-  // if user is authenticated in the session, carry on
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  else if (req.body.user_id && req.body.token) {
-    Token.find({
-      user_id: req.body.user_id,
-      token: req.body.token
-    }, function(err, tokenRes) {
-      if (err)
-        res.send({ status: 'error', message: "why aren't you logged in?"});
-
-      // not found
-      if (!tokenRes) {
-        res.send({ status: 'error', message: "why aren't you logged in?"});
-      }
-
-      // all checks pass, we're good!
-      return next();
-    });
-  }
-  else {
-    res.send({ status: 'error', message: "why aren't you logged in?"});
-  }
-}
+//// route middleware to make sure a user is logged in
+//function isLoggedIn(req, res, next) {
+//
+//  // if user is authenticated in the session, carry on
+//  if (req.isAuthenticated())
+//    return next();
+//
+//  // if they aren't redirect them to the home page
+//  res.redirect('/login');
+//}
+//
+//// route middleware for API
+//function isApiLoggedIn(req, res, next) {
+//
+//  // if user is authenticated in the session, carry on
+//  if (req.isAuthenticated()) {
+//    return next();
+//  }
+//  else if (req.body.user_id && req.body.token) {
+//    Token.find({
+//      user_id: req.body.user_id,
+//      token: req.body.token
+//    }, function(err, tokenRes) {
+//      if (err)
+//        res.send({ status: 'error', message: "why aren't you logged in?"});
+//
+//      // not found
+//      if (!tokenRes) {
+//        res.send({ status: 'error', message: "why aren't you logged in?"});
+//      }
+//
+//      // all checks pass, we're good!
+//      return next();
+//    });
+//  }
+//  else {
+//    res.send({ status: 'error', message: "why aren't you logged in?"});
+//  }
+//}
