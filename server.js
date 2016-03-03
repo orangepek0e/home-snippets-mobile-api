@@ -53,7 +53,7 @@ app.use(passport.initialize());
 //persistent login
 app.use(passport.session());
 app.use(flash());
-
+app.use('/public', express.static(__dirname + '/public'));
 
 //Routes
 require('./app/routes.js')(app, passport);
