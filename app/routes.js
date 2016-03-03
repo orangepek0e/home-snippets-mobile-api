@@ -118,7 +118,7 @@ module.exports = function(app, passport){
     });
   });
 
-app.post('/api/post', function(req,res){
+app.post('/api/post', upload.single('file'), function(req,res){
   var newPost = new Post();
   newPost._posterId = req.body.user_id;
   newPost.title = req.body.title;
