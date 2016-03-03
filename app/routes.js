@@ -135,11 +135,6 @@ app.post('/api/post', upload.single('file'), function(req,res){
   if (req.file.filename != "") {
 
     newPost.content = req.file.filename;
-
-    // there is an image found, save the image data and continue
-    if (err)
-      console.log(err);
-
   }
   else {
 
