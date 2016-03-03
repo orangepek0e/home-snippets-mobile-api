@@ -2,12 +2,17 @@ var mongoose = require('mongoose');
 
 var postSchema = mongoose.Schema({
     _posterId: {type: String, ref: 'User'},
-    posterName: {type: String, ref:'User'},
     title: String,
-    gameName: String,
-    systemName: String,
-    description: String,
-    location: String
+    rooms: String,
+    price: String,
+    date: {type: Date, default: Date.now},
+    content: String,
+    wifi: Boolean,
+    pets: Boolean,
+    parking: Boolean,
+    laundry: Boolean,
+    furnished: Boolean,
+    smoking: Boolean
 
 });
 

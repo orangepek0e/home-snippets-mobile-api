@@ -1,10 +1,20 @@
-//Dependencies
-var express = require('express');
-
 //Models
 var Token = require('../models/token.js');
 var User = require('../models/users.js');
 var Post = require('../models/post.js');
+
+//Dependencies
+var express = require('express');
+var multer = require('multer');
+var fs = require('fs');
+var path = require('path');
+var options = multer.diskStorage({ destination : 'public/uploads/' ,
+  filename: function (req, file, cb) {
+    cb(null, (Math.random().toString(36)+'00000000000000000').slice(2, 10) + Date.now() + path.extname(file.originalname));
+  }
+});
+var upload = multer({ storage: options });
+
 
 module.exports = function(app, passport){
 
@@ -99,24 +109,44 @@ module.exports = function(app, passport){
         return res.json(err);
 
       // not found
-      if (!tokenRes) {
-        res.json({ status: 'error'});
+      if (!tokenRes || tokenRes.length <= 0) {
+        return res.json({ status: 'error'});
       }
 
+      // all checks pass, we're good!
       return res.json({ status: 'success'});
     });
   });
 
 app.post('/api/post', function(req,res){
-
   var newPost = new Post();
-  newPost._posterId = req.session.user_id;
-  newPost.title = req.param('title');
-  newPost.gameName = req.param('gameName');
-  newPost.systemName = req.param('systemName');
-  newPost.description = req.param('description');
-  newPost.location = req.param('location');
+  newPost._posterId = req.body.user_id;
+  newPost.title = req.body.title;
+  newPost.rooms = req.body.rooms;
+  newPost.price = req.body.price;
+  newPost.wifi = req.body.wifi;
+  newPost.pets = req.body.pets;
+  newPost.parking = req.body.parking;
+  newPost.laundry = req.body.laundry;
+  newPost.furnished = req.body.furnished;
+  newPost.smoking = req.body.smoking;
+  console.log(req.body);
   console.log(newPost);
+  if (req.file.filename != "") {
+
+    newPost.content = req.file.filename;
+
+    // there is an image found, save the image data and continue
+    if (err)
+      console.log(err);
+
+  }
+  else {
+
+    // No image, save with the empty image variable
+    newPost.content = "";
+  }
+
   newPost.save(function(err){
     if(err){
       throw err;
@@ -128,6 +158,21 @@ app.post('/api/post', function(req,res){
     });
 
   });
+
+app.delete('/api/post/:post_id', function(req, res){
+  Post.remove({
+    _id: req.params.post_id
+  }, function(err, post){
+    if (err)
+      res.send(err);
+
+    Post.find(function(err, posts){
+      if(err)
+        res.send(err);
+      res.json(posts);
+    });
+  });
+});
 
 app.get('/api/post', function(req,res){
   Post.find({}).sort('-date').exec(function(err, posts){
@@ -141,44 +186,35 @@ app.get('/api/post', function(req,res){
 
 });
 
+  
 };
 
-//// route middleware to make sure a user is logged in
-//function isLoggedIn(req, res, next) {
-//
-//  // if user is authenticated in the session, carry on
-//  if (req.isAuthenticated())
-//    return next();
-//
-//  // if they aren't redirect them to the home page
-//  res.redirect('/login');
-//}
-//
-//// route middleware for API
-//function isApiLoggedIn(req, res, next) {
-//
-//  // if user is authenticated in the session, carry on
-//  if (req.isAuthenticated()) {
-//    return next();
-//  }
-//  else if (req.body.user_id && req.body.token) {
-//    Token.find({
-//      user_id: req.body.user_id,
-//      token: req.body.token
-//    }, function(err, tokenRes) {
-//      if (err)
-//        res.send({ status: 'error', message: "why aren't you logged in?"});
-//
-//      // not found
-//      if (!tokenRes) {
-//        res.send({ status: 'error', message: "why aren't you logged in?"});
-//      }
-//
-//      // all checks pass, we're good!
-//      return next();
-//    });
-//  }
-//  else {
-//    res.send({ status: 'error', message: "why aren't you logged in?"});
-//  }
-//}
+
+// route middleware for API
+function isApiLoggedIn(req, res, next) {
+
+  // if user is authenticated in the session, carry on
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  else if (req.body.user_id && req.body.token) {
+    Token.find({
+      user_id: req.body.user_id,
+      token: req.body.token
+    }, function(err, tokenRes) {
+      if (err)
+        res.send({ status: 'error', message: "why aren't you logged in?"});
+
+      // not found
+      if (!tokenRes) {
+        res.send({ status: 'error', message: "why aren't you logged in?"});
+      }
+
+      // all checks pass, we're good!
+      return next();
+    });
+  }
+  else {
+    res.send({ status: 'error', message: "why aren't you logged in?"});
+  }
+}

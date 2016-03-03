@@ -45,7 +45,7 @@ app.use(allowCrossDomain);
 
 //Passport
 app.use(session({
-  secret:'restInPFunk',
+  secret:'restInPFunk8675309',
   resave: false,
   saveUninitialized: false
 }));
